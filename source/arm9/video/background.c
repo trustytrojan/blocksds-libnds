@@ -226,11 +226,11 @@ static void bgInitValidate(unsigned int videoMode, unsigned int layer, BgType ty
 }
 #endif // NDEBUG
 
-// Initializes and enables the appropriate background with the supplied
-// attributes returns an id which must be supplied to the remainder of the
-// background functions.
-int bgInit(int layer, BgType type, BgSize size, int mapBase, int tileBase)
+int bgInitHidden(int layer, BgType type, BgSize size, int mapBase, int tileBase)
 {
+    // Disable layer while it's being setup
+    videoBgDisable(layer);
+
 #ifndef NDEBUG
     unsigned int videoMode = videoGetMode();
 
@@ -274,8 +274,6 @@ int bgInit(int layer, BgType type, BgSize size, int mapBase, int tileBase)
     bgState[layer].type = type;
     bgState[layer].size = size;
 
-    videoBgEnable(layer);
-
     bgState[layer].dirty = true;
 
     bgUpdate();
@@ -283,8 +281,18 @@ int bgInit(int layer, BgType type, BgSize size, int mapBase, int tileBase)
     return layer;
 }
 
-int bgInitSub(int layer, BgType type, BgSize size, int mapBase, int tileBase)
+int bgInit(int layer, BgType type, BgSize size, int mapBase, int tileBase)
 {
+    int ret = bgInitHidden(layer, type, size, mapBase, tileBase);
+    bgShow(ret);
+    return ret;
+}
+
+int bgInitHiddenSub(int layer, BgType type, BgSize size, int mapBase, int tileBase)
+{
+    // Disable layer while it's being setup
+    videoBgDisableSub(layer);
+
 #ifndef NDEBUG
     unsigned int videoMode = videoGetModeSub();
 
@@ -318,11 +326,16 @@ int bgInitSub(int layer, BgType type, BgSize size, int mapBase, int tileBase)
     bgState[layer + 4].type = type;
     bgState[layer + 4].size = size;
 
-    videoBgEnableSub(layer);
-
     bgState[layer + 4].dirty = true;
 
     bgUpdate();
 
     return layer + 4;
+}
+
+int bgInitSub(int layer, BgType type, BgSize size, int mapBase, int tileBase)
+{
+    int ret = bgInitHiddenSub(layer, type, size, mapBase, tileBase);
+    bgShow(ret);
+    return ret;
 }

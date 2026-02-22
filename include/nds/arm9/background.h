@@ -607,13 +607,22 @@ static inline void bgSetScale(int id, s32 sx, s32 sy)
     bgState[id].dirty = true;
 }
 
-/// Initializes a background on the main display.
+/// Initializes a background on the main display and displays it right away.
 ///
 /// Sets up background control register with specified settings and defaults to
 /// 256 color mode for tiled backgrounds.
 ///
 /// Sets the rotation/scale attributes for rot/ex rot backgrounds to 1:1 scale
 /// and 0 angle of rotation.
+///
+/// Consider using bgInitHidden() instead.
+///
+/// @warning
+///     The normal process to display a background is to call bgInit() and to
+///     load the data to VRAM later. This process will cause artifacts on the
+///     screen because the old data is still present in VRAM. If you want to
+///     prevent artifacts, use bgInitHidden() instead (and then load the data to
+///     VRAM and call bgShow() to display it).
 ///
 /// @warning
 ///     Your video mode must be setup correctly. For example, if you want to use
@@ -640,13 +649,59 @@ static inline void bgSetScale(int id, s32 sx, s32 sy)
 ///     The background ID to be used in the supporting functions.
 int bgInit(int layer, BgType type, BgSize size, int mapBase, int tileBase);
 
-/// Initializes a background on the sub display.
+/// Initializes a background on the main display and keeps it hidden.
 ///
 /// Sets up background control register with specified settings and defaults to
 /// 256 color mode for tiled backgrounds.
 ///
 /// Sets the rotation/scale attributes for rot/ex rot backgrounds to 1:1 scale
 /// and 0 angle of rotation.
+///
+/// After calling bgInitHidden() you can load the data to VRAM at your own
+/// pace, and you can use bgShow() to display the background layer when you're
+/// ready.
+///
+/// @warning
+///     Your video mode must be setup correctly. For example, if you want to use
+///     a bitmap background, remember to set the video mode to a valid mode,
+///     like 5. Otherwise, bgUpdate() won't update the video registers
+///     correctly.
+///
+/// @note
+///     tileBase is unused for bitmap backgrounds.
+///
+/// @param layer
+///     Background layer to init. Must be 0 - 3.
+/// @param type
+///     Type of background to init.
+/// @param size
+///     Size of the background.
+/// @param mapBase
+///     The 2k offset into VRAM  where the tile map will be placed, OR the 16k
+///     offset into vram the bitmap data will be placed.
+/// @param tileBase
+///     The 16k offset into VRAM where the tile graphics data will be placed.
+///
+/// @return
+///     The background ID to be used in the supporting functions.
+int bgInitHidden(int layer, BgType type, BgSize size, int mapBase, int tileBase);
+
+/// Initializes a background on the sub display and displays it right away.
+///
+/// Sets up background control register with specified settings and defaults to
+/// 256 color mode for tiled backgrounds.
+///
+/// Sets the rotation/scale attributes for rot/ex rot backgrounds to 1:1 scale
+/// and 0 angle of rotation.
+///
+/// Consider using bgInitHiddenSub() instead.
+///
+/// @warning
+///     The normal process to display a background is to call bgInitSub() and to
+///     load the data to VRAM later. This process will cause artifacts on the
+///     screen because the old data is still present in VRAM. If you want to
+///     prevent artifacts, use bgInitHiddenSub() instead (and then load the data
+///     to VRAM and call bgShow() to display it).
 ///
 /// @warning
 ///     Your video mode must be setup correctly. For example, if you want to use
@@ -673,6 +728,44 @@ int bgInit(int layer, BgType type, BgSize size, int mapBase, int tileBase);
 /// @return
 ///     The background ID to be used in the supporting functions.
 int bgInitSub(int layer, BgType type, BgSize size, int mapBase, int tileBase);
+
+/// Initializes a background on the sub display and keeps it hidden.
+///
+/// Sets up background control register with specified settings and defaults to
+/// 256 color mode for tiled backgrounds.
+///
+/// Sets the rotation/scale attributes for rot/ex rot backgrounds to 1:1 scale
+/// and 0 angle of rotation.
+///
+/// After calling bgInitHiddenSub() you can load the data to VRAM at your own
+/// pace, and you can use bgShow() to display the background layer when you're
+/// ready.
+///
+/// @warning
+///     Your video mode must be setup correctly. For example, if you want to use
+///     a bitmap background, remember to set the video mode to a valid mode,
+///     like 5. Otherwise, bgUpdate() won't update the video registers
+///     correctly.
+///
+/// @note
+///     tileBase is unused for bitmap backgrounds.
+///
+/// @param layer
+///     Background hardware layer to init. Must be 0 - 3.
+/// @param type
+///     The type of background to init.
+/// @param size
+///     The size of the background.
+/// @param mapBase
+///     The 2 KB offset into VRAM where the tile map will be placed, OR the 16
+///     KB offset into vram the bitmap data will be placed for bitmap
+///     backgrounds.
+/// @param tileBase
+///     The 16 KB offset into VRAM where the tile graphics data will be placed.
+///
+/// @return
+///     The background ID to be used in the supporting functions.
+int bgInitHiddenSub(int layer, BgType type, BgSize size, int mapBase, int tileBase);
 
 /// Allows direct access to background control for the chosen layer, returns a
 /// pointer to the current control bits.

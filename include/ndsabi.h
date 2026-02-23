@@ -13,6 +13,8 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
+#include <nds/ndstypes.h>
+
 /// Copies n bytes from src to dest (forward)
 ///
 /// Assumes dest and src are 2-byte aligned
@@ -23,7 +25,8 @@ extern "C" {
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __ndsabi_memcpy2(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __ndsabi_memcpy2(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes from src to dest (forward)
 ///
@@ -35,7 +38,8 @@ void __ndsabi_memcpy2(void *__restrict__ dest, const void *__restrict__ src, siz
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __ndsabi_memcpy1(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __ndsabi_memcpy1(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes from src to dest (backwards)
 ///
@@ -47,7 +51,8 @@ void __ndsabi_memcpy1(void *__restrict__ dest, const void *__restrict__ src, siz
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __ndsabi_rmemcpy1(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __ndsabi_rmemcpy1(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes from src to dest (backwards)
 ///
@@ -57,7 +62,8 @@ void __ndsabi_rmemcpy1(void *__restrict__ dest, const void *__restrict__ src, si
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __ndsabi_rmemcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __ndsabi_rmemcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes in multiples of 16 bytes from src to dest (forward) using FIQ mode
 ///
@@ -69,7 +75,8 @@ void __ndsabi_rmemcpy(void *__restrict__ dest, const void *__restrict__ src, siz
 ///     Source address
 /// @param n
 ///     Number of bytes to copy, must be a multiple of 16
-void __ndsabi_fiq_memcpy4x4(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __ndsabi_fiq_memcpy4x4(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes from src to dest (forward) using FIQ mode
 ///
@@ -81,7 +88,8 @@ void __ndsabi_fiq_memcpy4x4(void *__restrict__ dest, const void *__restrict__ sr
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __ndsabi_fiq_memcpy4(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __ndsabi_fiq_memcpy4(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Fills dest with n bytes of c
 ///
@@ -95,7 +103,8 @@ void __ndsabi_fiq_memcpy4(void *__restrict__ dest, const void *__restrict__ src,
 ///     Number of bytes to set
 /// @param c
 ///     Value to set
-void __ndsabi_lwordset4(void *dest, size_t n, long long c) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __ndsabi_lwordset4(void *dest, size_t n, long long c);
 
 /// Fills dest with n bytes of c.
 ///
@@ -109,7 +118,8 @@ void __ndsabi_lwordset4(void *dest, size_t n, long long c) __attribute__((nonnul
 ///     Number of bytes to set
 /// @param c
 ///     Value to set
-void __ndsabi_wordset4(void *dest, size_t n, int c) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __ndsabi_wordset4(void *dest, size_t n, int c);
 
 /// Coroutine state
 typedef struct
@@ -129,9 +139,9 @@ typedef struct
 ///     Procedure to call as a coroutine
 /// @param arg
 ///     Initial argument to be passed to the coroutine.
+LIBNDS_NONNULL(1, 2, 3)
 void __ndsabi_coro_make(__ndsabi_coro_t* __restrict__ coro,
-    void* __restrict__ sp_top, int(*coproc)(__ndsabi_coro_t*, void*), void *arg)
-    __attribute__((nonnull(1, 2, 3)));
+    void* __restrict__ sp_top, int(*coproc)(__ndsabi_coro_t*, void*), void *arg);
 
 /// Initializes a coro struct to call a given coroutine.
 ///
@@ -147,9 +157,9 @@ void __ndsabi_coro_make(__ndsabi_coro_t* __restrict__ coro,
 ///     Procedure to call as a coroutine
 /// @param arg
 ///     Initial argument to be passed to the coroutine.
+LIBNDS_NONNULL(1, 2, 3)
 void __ndsabi_coro_make_noctx(__ndsabi_coro_t* __restrict__ coro,
-    void* __restrict__ sp_top, int(*coproc)(void*), void *arg)
-    __attribute__((nonnull(1, 2, 3)));
+    void* __restrict__ sp_top, int(*coproc)(void*), void *arg);
 
 /// Starts/resumes a given coroutine.
 ///
@@ -158,7 +168,8 @@ void __ndsabi_coro_make_noctx(__ndsabi_coro_t* __restrict__ coro,
 ///
 /// @return
 ///     Integer value from coroutine
-int __ndsabi_coro_resume(__ndsabi_coro_t* coro) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+int __ndsabi_coro_resume(__ndsabi_coro_t* coro);
 
 /// Yields a given value of a coroutine back to the caller.
 ///
@@ -166,7 +177,8 @@ int __ndsabi_coro_resume(__ndsabi_coro_t* coro) __attribute__((nonnull(1)));
 ///     Coroutine that is yielding
 /// @param value
 ///     Returned to caller.
-void __ndsabi_coro_yield(__ndsabi_coro_t* coro, int value) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __ndsabi_coro_yield(__ndsabi_coro_t* coro, int value);
 
 #ifdef __cplusplus
 }

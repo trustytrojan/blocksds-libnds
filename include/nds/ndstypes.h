@@ -71,6 +71,9 @@ extern "C" {
 /// Used to mark functions that expect strings formatted like printf().
 #define LIBNDS_PRINTFLIKE(x, y) __attribute__((format(printf, x, y)))
 
+/// Used to tag functions with arguments that can never be NULL
+#define LIBNDS_NONNULL(...) __attribute__((nonnull(__VA_ARGS__)))
+
 /// Helper that prevents the compiler from reordering memory accesses.
 ///
 /// Accesses to pointers marked as "volatile" aren't reordered, but accesses

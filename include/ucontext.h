@@ -14,13 +14,16 @@ extern "C" {
 
 #include <sys/ucontext.h>
 
+#include <nds/ndstypes.h>
+
 /// Copies the current machine context into ucp
 ///
 /// @param ucp
 ///     Pointer to context structure
 /// @return
 ///     0
-int getcontext(ucontext_t *ucp) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+int getcontext(ucontext_t *ucp);
 
 /// Sets the current context to ucp
 ///
@@ -29,7 +32,8 @@ int getcontext(ucontext_t *ucp) __attribute__((nonnull(1)));
 ///
 /// @return
 ///     Does not return
-int setcontext(const ucontext_t *ucp) __attribute__((noreturn, nonnull(1)));
+LIBNDS_NORETURN LIBNDS_NONNULL(1)
+int setcontext(const ucontext_t *ucp);
 
 /// Writes current context into oucp, and switches to ucp
 ///
@@ -41,7 +45,8 @@ int setcontext(const ucontext_t *ucp) __attribute__((noreturn, nonnull(1)));
 /// @return
 ///     Although technically this does not return, it will appear to return 0
 ///     when switching to oucp
-int swapcontext(ucontext_t *__restrict__ oucp, const ucontext_t *__restrict__ ucp) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+int swapcontext(ucontext_t *__restrict__ oucp, const ucontext_t *__restrict__ ucp);
 
 /// Modifies context ucp to invoke func with setcontext.
 ///
@@ -57,7 +62,8 @@ int swapcontext(ucontext_t *__restrict__ oucp, const ucontext_t *__restrict__ uc
 ///     Number of arguments passed to func
 /// @param ...
 ///     List of arguments to be passed to func
-void makecontext(ucontext_t *ucp, void(*func)(void), int argc, ...) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void makecontext(ucontext_t *ucp, void(*func)(void), int argc, ...);
 
 #ifdef __cplusplus
 }

@@ -12,6 +12,8 @@ extern "C" {
 
 #include <stddef.h>
 
+#include <nds/ndstypes.h>
+
 /// Alias of __aeabi_memcpy4
 ///
 /// @param dest
@@ -20,7 +22,8 @@ extern "C" {
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __aeabi_memcpy8(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __aeabi_memcpy8(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes from src to dest (forward)
 ///
@@ -32,7 +35,8 @@ void __aeabi_memcpy8(void *__restrict__ dest, const void *__restrict__ src, size
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __aeabi_memcpy4(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __aeabi_memcpy4(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Copies n bytes from src to dest (forward)
 ///
@@ -42,7 +46,8 @@ void __aeabi_memcpy4(void *__restrict__ dest, const void *__restrict__ src, size
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __aeabi_memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __aeabi_memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n);
 
 /// Alias of __aeabi_memmove4
 ///
@@ -52,7 +57,8 @@ void __aeabi_memcpy(void *__restrict__ dest, const void *__restrict__ src, size_
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __aeabi_memmove8(void *dest, const void *src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __aeabi_memmove8(void *dest, const void *src, size_t n);
 
 ///Safely copies n bytes of src to dest
 ///
@@ -64,7 +70,8 @@ void __aeabi_memmove8(void *dest, const void *src, size_t n) __attribute__((nonn
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __aeabi_memmove4(void *dest, const void *src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __aeabi_memmove4(void *dest, const void *src, size_t n);
 
 /// Safely copies n bytes of src to dest
 ///
@@ -74,7 +81,8 @@ void __aeabi_memmove4(void *dest, const void *src, size_t n) __attribute__((nonn
 ///     Source address
 /// @param n
 ///     Number of bytes to copy
-void __aeabi_memmove(void *dest, const void *src, size_t n) __attribute__((nonnull(1, 2)));
+LIBNDS_NONNULL(1, 2)
+void __aeabi_memmove(void *dest, const void *src, size_t n);
 
 /// Alias of __aeabi_memset4
 ///
@@ -84,7 +92,8 @@ void __aeabi_memmove(void *dest, const void *src, size_t n) __attribute__((nonnu
 ///     Number of bytes to set
 /// @param c
 ///     Value to set
-void __aeabi_memset8(void *dest, size_t n, int c) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __aeabi_memset8(void *dest, size_t n, int c);
 
 /// Set n bytes of dest to (c & 0xff)
 ///
@@ -96,7 +105,8 @@ void __aeabi_memset8(void *dest, size_t n, int c) __attribute__((nonnull(1)));
 ///     Number of bytes to set
 /// @param c
 ///     Value to set
-void __aeabi_memset4(void *dest, size_t n, int c) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __aeabi_memset4(void *dest, size_t n, int c);
 
 /// Set n bytes of dest to (c & 0xff)
 ///
@@ -106,7 +116,8 @@ void __aeabi_memset4(void *dest, size_t n, int c) __attribute__((nonnull(1)));
 ///     Number of bytes to set
 /// @param c
 ///     Value to set
-void __aeabi_memset(void *dest, size_t n, int c) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __aeabi_memset(void *dest, size_t n, int c);
 
 /// Alias of __aeabi_memclr4
 ///
@@ -114,7 +125,8 @@ void __aeabi_memset(void *dest, size_t n, int c) __attribute__((nonnull(1)));
 ///     Destination address
 /// @param n
 ///     Number of bytes to clear
-void __aeabi_memclr8(void *dest, size_t n) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __aeabi_memclr8(void *dest, size_t n);
 
 /// Clears n bytes of dest to 0
 ///
@@ -124,7 +136,8 @@ void __aeabi_memclr8(void *dest, size_t n) __attribute__((nonnull(1)));
 ///     Destination address
 /// @param n
 ///     Number of bytes to clear
-void __aeabi_memclr4(void *dest, size_t n) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __aeabi_memclr4(void *dest, size_t n);
 
 /// Clears n bytes of dest to 0
 ///
@@ -132,7 +145,8 @@ void __aeabi_memclr4(void *dest, size_t n) __attribute__((nonnull(1)));
 ///     Destination address
 /// @param n
 ///     Number of bytes to clear
-void __aeabi_memclr(void *dest, size_t n) __attribute__((nonnull(1)));
+LIBNDS_NONNULL(1)
+void __aeabi_memclr(void *dest, size_t n);
 
 #ifdef __cplusplus
 }

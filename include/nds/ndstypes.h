@@ -23,6 +23,32 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifdef __INTELLISENSE__
+
+#define ITCM_CODE
+#define ITCM_DATA
+#define ITCM_BSS
+#define DTCM_DATA
+#define DTCM_BSS
+#define TWL_CODE
+#define TWL_DATA
+#define TWL_BSS
+#define ARM_CODE
+#define THUMB_CODE
+#define ALIGN(m)
+#define PACKED
+#define packed_struct
+#define LIBNDS_DEPRECATED
+#define LIBNDS_NOINLINE
+#define LIBNDS_ALWAYS_INLINE
+#define LIBNDS_NORETURN
+#define LIBNDS_PRINTFLIKE(x, y)
+#define LIBNDS_NONNULL(...)
+#define COMPILER_MEMORY_BARRIER()
+#define WARN_UNUSED_RESULT
+
+#else // __INTELLISENSE__
+
 /// Used to place a function in ITCM
 #define ITCM_CODE __attribute__((section(".itcm.text"), long_call))
 
@@ -93,6 +119,8 @@ extern "C" {
 /// Makes the compiler output a warning if the return value of a function is
 /// ignored.
 #define WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+
+#endif // __INTELLISENSE__
 
 // Macros related to the bin2o macro of the Makefile
 #define GETRAW(name)        (name)

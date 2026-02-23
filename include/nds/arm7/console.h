@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Zlib
 //
-// Copyright (C) 2024 Antonio Niño Díaz
+// Copyright (C) 2024-2026 Antonio Niño Díaz
 
 #ifndef LIBNDS_NDS_ARM7_CONSOLE_H__
 #define LIBNDS_NDS_ARM7_CONSOLE_H__
@@ -19,6 +19,8 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/cdefs.h>
+
+#include <nds/ndstypes.h>
 
 /// Checks if the console has been setup by the ARM9 or not.
 ///
@@ -78,7 +80,7 @@ int consoleVprintf(const char *fmt, va_list args);
 ///
 /// @return
 ///     It returns 0 on success, -1 if there are unsuported flags.
-int consolePrintf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+int consolePrintf(const char *fmt, ...) LIBNDS_PRINTFLIKE(1, 2);
 
 /// Sends a message to the ARM9 to print the contents stored in the buffer.
 void consoleFlush(void);

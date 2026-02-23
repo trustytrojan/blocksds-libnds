@@ -68,6 +68,9 @@ extern "C" {
 /// Used to mark functions that don't return to the caller.
 #define LIBNDS_NORETURN __attribute__((noreturn))
 
+/// Used to mark functions that expect strings formatted like printf().
+#define LIBNDS_PRINTFLIKE(x, y) __attribute__((format(printf, x, y)))
+
 /// Helper that prevents the compiler from reordering memory accesses.
 ///
 /// Accesses to pointers marked as "volatile" aren't reordered, but accesses

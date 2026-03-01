@@ -13,9 +13,17 @@
 #include <nds/system.h>
 
 #include "fat.h"
+#define DIR DIRff
 #include "ff.h"
+#undef DIR
+#include <devoptab.h>
 #include "fatfs/cache.h"
 #include "filesystem_internal.h"
+
+extern const devoptab_posix_t dot_fatfs;
+extern const devoptab_posix_t dot_sd;
+extern const devoptab_posix_t dot_nand;
+extern const devoptab_posix_t dot_nand2;
 
 #define DEFAULT_SECTORS_PER_PAGE    8 // Each sector is 512 bytes
 
@@ -312,8 +320,6 @@ bool nandInit(bool read_only)
 
 bool fatInit(int32_t cache_size_pages, bool set_as_default_device)
 {
-    (void)set_as_default_device;
-
     static bool has_been_called = false;
 
     if (has_been_called == true)
@@ -441,6 +447,32 @@ bool fatInit(int32_t cache_size_pages, bool set_as_default_device)
             errno = fatfs_error_to_posix(result);
             goto cleanup;
         }
+    }
+
+    const int fat_dev_idx = AddDevice(&dot_fatfs.dot);
+    const int sd_dev_idx = AddDevice(&dot_sd.dot);
+    const int nand_dev_idx = AddDevice(&dot_nand.dot);
+    const int nand2_dev_idx = AddDevice(&dot_nand2.dot);
+
+    if ((fat_dev_idx < 0) || (sd_dev_idx < 0) || (nand_dev_idx < 0) || (nand2_dev_idx < 0))
+        goto cleanup;
+
+    if (set_as_default_device)
+    {
+        int default_dev_idx = fat_dev_idx;
+
+        if (default_drive != NULL)
+        {
+            if (strncmp(default_drive, "sd:/", 4) == 0)
+                default_dev_idx = sd_dev_idx;
+            else if (strncmp(default_drive, "nand2:/", 7) == 0)
+                default_dev_idx = nand2_dev_idx;
+            else if (strncmp(default_drive, "nand:/", 6) == 0)
+                default_dev_idx = nand_dev_idx;
+        }
+
+        if (SetDefaultDevice(default_dev_idx) != 0)
+            goto cleanup;
     }
 
     free(default_cwd);

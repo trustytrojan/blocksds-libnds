@@ -5,22 +5,8 @@
 
 #include <stdio.h>
 
-#include <nds/arm9/keyboard.h>
-#include <nds/arm9/input.h>
-#include <nds/cothread.h>
-#include <nds/interrupts.h>
+#include <devoptab.h>
 
-#include "arm9/libnds_internal.h"
-
-// Newline buffer so that we can support pressing the Backspace key.
-// If not defined, unbuffered keyboard input is used.
-#define INPUT_BUFFER_SIZE 128
-#ifdef INPUT_BUFFER_SIZE
-#define INPUT_BUFFER_MASK (INPUT_BUFFER_SIZE - 1)
-static char stdin_buf[INPUT_BUFFER_SIZE];
-static uint16_t stdin_buf_left = 0;
-static uint16_t stdin_buf_right = 0;
-#endif
 bool stdin_buf_empty = false;
 // Buffers so that we can send to the console full ANSI escape sequences.
 #define OUTPUT_BUFFER_SIZE 16
@@ -29,8 +15,12 @@ static char stderr_buf[OUTPUT_BUFFER_SIZE + 1];
 static uint16_t stdout_buf_len = 0;
 static uint16_t stderr_buf_len = 0;
 
-static int putc_buffered(char c, char *buf, uint16_t *buf_len, ConsoleOutFn fn)
+static int putc_buffered(char c, char *buf, uint16_t *buf_len, int fd)
 {
+    const devoptab_t *const device = devoptab_list[fd];
+    if ((device == NULL) || (device->write_r == NULL))
+        return c;
+
     if ((c == 0x1B) || (*buf_len > 0))
     {
         buf[*buf_len] = c;
@@ -40,13 +30,13 @@ static int putc_buffered(char c, char *buf, uint16_t *buf_len, ConsoleOutFn fn)
         if ((*buf_len == OUTPUT_BUFFER_SIZE) || (c == '\n') || (c == '\r') ||
             ((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')))
         {
-            fn(buf, *buf_len);
+            device->write_r(fd, buf, *buf_len);
             *buf_len = 0;
         }
     }
     else
     {
-        fn(&c, 1);
+        device->write_r(fd, &c, 1);
     }
 
     return c;
@@ -56,95 +46,34 @@ static int stderr_putc_buffered(char c, FILE *file)
 {
     (void)file;
 
-    if (libnds_stderr_write == NULL)
-        return c;
-
-    return putc_buffered(c, stderr_buf, &stderr_buf_len, libnds_stderr_write);
+    return putc_buffered(c, stderr_buf, &stderr_buf_len, STDERR_FILENO);
 }
 
 static int stdout_putc_buffered(char c, FILE *file)
 {
     (void)file;
 
-    // If stdout is not initialized, the user may have nonetheless initialized
-    // a debug console with consoleDebugInit(). Try to fall back to that.
-    if (libnds_stdout_write == NULL)
+    if ((devoptab_list[STDOUT_FILENO] == NULL) ||
+        (devoptab_list[STDOUT_FILENO]->write_r == NULL))
+    {
         return stderr_putc_buffered(c, file);
+    }
 
-    return putc_buffered(c, stdout_buf, &stdout_buf_len, libnds_stdout_write);
+    return putc_buffered(c, stdout_buf, &stdout_buf_len, STDOUT_FILENO);
 }
 
 static int stdin_getc_keyboard(FILE *file)
 {
     (void)file;
 
-    static int shown = 0;
-    int c = -1;
+    const devoptab_t *const device = devoptab_list[STDIN_FILENO];
+    if ((device == NULL) || (device->read_r == NULL))
+        return -1;
 
-#ifdef INPUT_BUFFER_SIZE
-    if (shown == 0 && stdin_buf_left != stdin_buf_right)
-    {
-        c = stdin_buf[stdin_buf_left];
-        stdin_buf_left = (stdin_buf_left + 1) & INPUT_BUFFER_MASK;
-        return c;
-    }
-#endif
-
-    if (shown == 0)
-    {
-        keyboardShow();
-        shown = 1;
-    }
-
-    while (true)
-    {
-        scanKeys();
-#ifdef INPUT_BUFFER_SIZE
-        stdin_buf_empty = stdin_buf_left == stdin_buf_right;
-        int kc = keyboardUpdate();
-        stdin_buf_empty = false;
-        if (kc == DVK_BACKSPACE)
-        {
-            if (stdin_buf_left != stdin_buf_right)
-            {
-                stdin_buf_right = (stdin_buf_right - 1) & INPUT_BUFFER_MASK;
-            }
-        }
-        else if (kc > 0)
-        {
-            uint16_t next_right = (stdin_buf_right + 1) & INPUT_BUFFER_MASK;
-            // if about to overflow buffer, pop char
-            // if newline, finish writing string - hide keyboard + pop char
-            if (next_right == stdin_buf_left || kc == '\n')
-            {
-                if (kc == '\n')
-                {
-                    keyboardHide();
-                    shown = 0;
-                }
-
-                c = stdin_buf[stdin_buf_left];
-                stdin_buf_left = (stdin_buf_left + 1) & INPUT_BUFFER_MASK;
-            }
-            stdin_buf[stdin_buf_right] = kc;
-            stdin_buf_right = next_right;
-        }
-#else
-        c = keyboardUpdate();
-#endif
-        if (c > 0)
-            break;
-
-        cothread_yield_irq(IRQ_VBLANK);
-    }
-
-#ifndef INPUT_BUFFER_SIZE
-    if (c == '\n')
-    {
-        keyboardHide();
-        shown = 0;
-    }
-#endif
+    char c = 0;
+    const ssize_t ret = device->read_r(STDIN_FILENO, &c, 1);
+    if (ret <= 0)
+        return -1;
 
     return c;
 }

@@ -5,9 +5,11 @@
 
 // stdin integration for a simple keyboard
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
+#include <devoptab.h>
 #include <nds/arm9/background.h>
 #include <nds/arm9/input.h>
 #include <nds/arm9/keyboard.h>
@@ -134,6 +136,12 @@ static const Keyboard defaultKeyboard =
 
 static bool keyboardLoaded = false;
 
+#define KB_BUFFER_SIZE 128
+#define KB_BUFFER_MASK (KB_BUFFER_SIZE - 1)
+static char kb_buffer[KB_BUFFER_SIZE];
+static uint16_t kb_buffer_left = 0;
+static uint16_t kb_buffer_right = 0;
+
 // This pointer keeps track of the original struct used to initialize the
 // keyboard. This is important so that we can re-initialize the keyboard state
 // to the correct one whenever the user calls keyboardShow().
@@ -142,6 +150,80 @@ static const Keyboard *curKeyboardOriginal = NULL;
 // Whenever a keyboard is loaded, this struct will hold all of its information.
 // That way the original struct will remain intact.
 static Keyboard curKeyboard;
+
+static ssize_t kb_read(int fd, char *ptr, size_t len)
+{
+    if (fd != STDIN_FILENO)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    if ((ptr == NULL) || (len == 0))
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (!keyboardLoaded)
+    {
+        errno = ENODEV;
+        return -1;
+    }
+
+    bool was_hidden = !curKeyboard.visible;
+    if (was_hidden)
+        keyboardShow();
+
+    size_t out = 0;
+    while (out < len)
+    {
+        while (kb_buffer_left == kb_buffer_right)
+        {
+            scanKeys();
+
+            stdin_buf_empty = true;
+            int key = keyboardUpdate();
+            stdin_buf_empty = false;
+
+            if (key == DVK_BACKSPACE)
+            {
+                if (kb_buffer_left != kb_buffer_right)
+                    kb_buffer_right = (kb_buffer_right - 1) & KB_BUFFER_MASK;
+            }
+            else if (key > 0)
+            {
+                uint16_t next = (kb_buffer_right + 1) & KB_BUFFER_MASK;
+                if (next != kb_buffer_left)
+                {
+                    kb_buffer[kb_buffer_right] = (char)key;
+                    kb_buffer_right = next;
+                }
+            }
+
+            if (kb_buffer_left == kb_buffer_right)
+                cothread_yield_irq(IRQ_VBLANK);
+        }
+
+        char c = kb_buffer[kb_buffer_left];
+        kb_buffer_left = (kb_buffer_left + 1) & KB_BUFFER_MASK;
+
+        ptr[out++] = c;
+
+        if ((c == '\n') || (c == '\r'))
+            break;
+    }
+
+    if (was_hidden)
+        keyboardHide();
+
+    return out;
+}
+
+static const devoptab_t dot_keyboard = {
+    .name = "kb",
+    .read_r = kb_read,
+};
 
 s16 keyboardGetKey(int x, int y)
 {
@@ -356,6 +438,9 @@ Keyboard *keyboardInit_call(const Keyboard *keyboard, int layer, BgType type, Bg
     curKeyboard.visible = false;
 
     bgUpdate();
+
+    // Register keyboard as stdin device in devoptab
+    devoptab_list[STDIN_FILENO] = &dot_keyboard;
 
     keyboardLoaded = true;
 

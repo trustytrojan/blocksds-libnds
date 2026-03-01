@@ -16,6 +16,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include <devoptab.h>
+
 #include <nds/arm9/background.h>
 #include <nds/arm9/cache.h>
 #include <nds/arm9/console.h>
@@ -70,7 +72,7 @@ static const PrintConsole defaultConsole =
 
 static PrintConsole currentCopy;
 
-static PrintConsole *currentConsole = &currentCopy;
+PrintConsole *currentConsole = &currentCopy;
 
 const PrintConsole *consoleGetDefault(void)
 {
@@ -176,7 +178,7 @@ static void consoleClearLine(char mode)
     }
 }
 
-ssize_t nocash_write(const char *ptr, size_t len)
+static ssize_t nocash_write(int, const char *ptr, size_t len)
 {
     for (size_t i = 0; i < len; i++)
         nocash_putc_buffered(ptr[i], NULL);
@@ -184,7 +186,7 @@ ssize_t nocash_write(const char *ptr, size_t len)
     return len;
 }
 
-static ssize_t con_write(const char *ptr, size_t len)
+static ssize_t con_write(int, const char *ptr, size_t len)
 {
     const char *tmp = ptr;
 
@@ -361,8 +363,15 @@ static ssize_t con_write(const char *ptr, size_t len)
     return count;
 }
 
-ConsoleOutFn libnds_stdout_write = NULL;
-ConsoleOutFn libnds_stderr_write = NULL;
+static const devoptab_t dot_console = {
+    .name = "con",
+    .write_r = con_write,
+};
+
+static const devoptab_t dot_nocash = {
+    .name = "nocash",
+    .write_r = nocash_write
+};
 
 void consoleLoadFont(PrintConsole *console)
 {
@@ -487,8 +496,8 @@ PrintConsole *consoleInitEx(PrintConsole *console, int layer, BgType type, BgSiz
 
     if (firstConsoleInit)
     {
-        libnds_stdout_write = con_write;
-        libnds_stderr_write = con_write;
+        devoptab_list[STDOUT_FILENO] = &dot_console;
+        devoptab_list[STDERR_FILENO] = &dot_console;
 
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stderr, NULL, _IONBF, 0);
@@ -556,21 +565,20 @@ void consoleSetFont(PrintConsole *console, ConsoleFont *font)
 
 void consoleDebugInit(DebugDevice device)
 {
-    int buffertype = _IONBF;
-
     switch (device)
     {
         case DebugDevice_NOCASH:
-            libnds_stderr_write = nocash_write;
+            devoptab_list[STDERR_FILENO] = &dot_nocash;
             break;
         case DebugDevice_CONSOLE:
-            libnds_stderr_write = con_write;
+            devoptab_list[STDERR_FILENO] = &dot_console;
             break;
         case DebugDevice_NULL:
-            libnds_stderr_write = NULL;
+            devoptab_list[STDERR_FILENO] = &dot_null;
             break;
     }
-    setvbuf(stderr, NULL, buffertype, 0);
+
+    setvbuf(stderr, NULL, _IONBF, 0);
 }
 
 // Places the console in a default mode using bg0 of the sub display, and VRAM_C
@@ -800,22 +808,6 @@ void consoleSetWindow(PrintConsole *console, int x, int y, int width, int height
 
     console->cursorX = 0;
     console->cursorY = 0;
-}
-
-void consoleSetCustomStdout(ConsoleOutFn fn)
-{
-    if (fn != NULL)
-        libnds_stdout_write = fn;
-    else
-        libnds_stdout_write = con_write;
-}
-
-void consoleSetCustomStderr(ConsoleOutFn fn)
-{
-    if (fn != NULL)
-        libnds_stderr_write = fn;
-    else
-        libnds_stderr_write = con_write;
 }
 
 // ---------------------------------------------------------------------------

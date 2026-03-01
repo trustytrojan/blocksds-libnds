@@ -2,3 +2,8 @@ build
 lib
 docs
 warn.log
+libsysbase
+.cache
+dkp-libnds
+*.json
+.clang-format

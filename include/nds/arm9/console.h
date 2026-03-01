@@ -116,10 +116,6 @@ extern "C" {
 /// console.
 typedef bool (* ConsolePrint)(void *con, char c);
 
-/// Function type used by libnds to redirect characters sent to stdout and
-/// stderr (skipping the call to the ConsolePrint handler).
-typedef ssize_t (* ConsoleOutFn)(const char *ptr, size_t len);
-
 /// A font struct for the console.
 ///
 /// The graphics defined in this struct are loaded by consoleInit() if
@@ -449,26 +445,8 @@ void consolePrintChar(char c);
 /// Initializes the debug console output on stderr to the specified device.
 ///
 /// @param device
-///     The debug device (or devices) to output debug print to.
+///     The debug device to output debug prints to.
 void consoleDebugInit(DebugDevice device);
-
-/// Sets the function where stdout is sent, bypassing the PrintConsole handler.
-///
-/// To reset it to the libnds console handler, call this function with NULL as
-/// an argument.
-///
-/// @param fn
-///     Callback where stdout is sent.
-void consoleSetCustomStdout(ConsoleOutFn fn);
-
-/// Sets the function where stderr is sent, bypassing the PrintConsole handler.
-///
-/// To reset it to the libnds console handler, call this function with NULL as
-/// an argument, or call consoleDebugInit().
-///
-/// @param fn
-///     Callback where stderr is sent.
-void consoleSetCustomStderr(ConsoleOutFn fn);
 
 /// Initialize the ARM7 console and direct the output to the specified console.
 ///

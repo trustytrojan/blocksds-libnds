@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include <aeabi.h>
+#include <devoptab.h>
 #include <fat.h>
 #include <nds/arm9/card.h>
 #include <nds/arm9/sassert.h>
@@ -34,6 +35,8 @@
 #undef DIR
 #include "filesystem_internal.h"
 #include "nitrofs_internal.h"
+
+extern const devoptab_posix_t dot_nitrofs;
 
 // Include "dirent.h" after the FatFs inclusion hack.
 #include <dirent.h>
@@ -884,6 +887,19 @@ bool nitroFSInit(const char *basepath)
 
     // Set "nitro:/" as default path
     current_drive_is_nitrofs = true;
+
+    const int nitro_dev_idx = AddDevice(&dot_nitrofs.dot);
+    if (nitro_dev_idx < 0)
+    {
+        errno = ENODEV;
+        return false;
+    }
+
+    if (SetDefaultDevice(nitro_dev_idx) != 0)
+    {
+        errno = ENODEV;
+        return false;
+    }
 
     return true;
 }

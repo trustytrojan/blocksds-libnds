@@ -170,16 +170,6 @@ static char *nitro_getcwd(char *buf, size_t size)
 	return buf;
 }
 
-static char *nitro_getwd(char *buf)
-{
-	return nitro_getcwd(buf, PATH_MAX);
-}
-
-static char *nitro_get_current_dir_name(void)
-{
-	return nitro_getcwd(NULL, 0);
-}
-
 static int nitro_rename(const char *oldName, const char *newName)
 {
 	(void)oldName;
@@ -350,8 +340,6 @@ const devoptab_posix_t dot_nitrofs = {
 	.unlink_r = nitro_unlink,
 	.chdir_r = nitro_chdir,
 	.getcwd_r = nitro_getcwd,
-	.getwd_r = nitro_getwd,
-	.get_current_dir_name_r = nitro_get_current_dir_name,
 	.rename_r = nitro_rename,
 	.mkdir_r = nitro_mkdir,
 	.diropen_r = nitro_diropen,

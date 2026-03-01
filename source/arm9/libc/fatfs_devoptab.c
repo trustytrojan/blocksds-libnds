@@ -328,16 +328,6 @@ static char *fat_getcwd(char *buf, size_t size)
 	return buf;
 }
 
-static char *fat_getwd(char *buf)
-{
-	return fat_getcwd(buf, PATH_MAX);
-}
-
-static char *fat_get_current_dir_name(void)
-{
-	return fat_getcwd(NULL, 0);
-}
-
 static int fat_rename(const char *oldName, const char *newName)
 {
 	const FRESULT result = f_rename(oldName, newName);
@@ -656,8 +646,6 @@ const devoptab_posix_t dot_fatfs = {
 	.unlink_r = fat_unlink,
 	.chdir_r = fat_chdir,
 	.getcwd_r = fat_getcwd,
-	.getwd_r = fat_getwd,
-	.get_current_dir_name_r = fat_get_current_dir_name,
 	.rename_r = fat_rename,
 	.mkdir_r = fat_mkdir,
 	.diropen_r = fat_diropen,
@@ -690,8 +678,6 @@ const devoptab_posix_t dot_sd = {
 	.unlink_r = fat_unlink,
 	.chdir_r = fat_chdir,
 	.getcwd_r = fat_getcwd,
-	.getwd_r = fat_getwd,
-	.get_current_dir_name_r = fat_get_current_dir_name,
 	.rename_r = fat_rename,
 	.mkdir_r = fat_mkdir,
 	.diropen_r = fat_diropen,
@@ -724,8 +710,6 @@ const devoptab_posix_t dot_nand = {
 	.unlink_r = fat_unlink,
 	.chdir_r = fat_chdir,
 	.getcwd_r = fat_getcwd,
-	.getwd_r = fat_getwd,
-	.get_current_dir_name_r = fat_get_current_dir_name,
 	.rename_r = fat_rename,
 	.mkdir_r = fat_mkdir,
 	.diropen_r = fat_diropen,
@@ -758,8 +742,6 @@ const devoptab_posix_t dot_nand2 = {
 	.unlink_r = fat_unlink,
 	.chdir_r = fat_chdir,
 	.getcwd_r = fat_getcwd,
-	.getwd_r = fat_getwd,
-	.get_current_dir_name_r = fat_get_current_dir_name,
 	.rename_r = fat_rename,
 	.mkdir_r = fat_mkdir,
 	.diropen_r = fat_diropen,

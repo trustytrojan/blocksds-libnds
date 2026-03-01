@@ -450,38 +450,13 @@ char *getcwd(char *buf, size_t size)
 
 char *getwd(char *buf)
 {
-	int device_idx;
-	const devoptab_posix_t *const posix = get_default_posix_device(&device_idx);
-	if (posix == NULL)
-		return NULL;
-
-	if (posix->getwd_r != NULL)
-	{
-		callback_device_idx = device_idx;
-		char *const ret = posix->getwd_r(buf);
-		callback_device_idx = -1;
-		return ret;
-	}
-
-	return getcwd(buf, PATH_MAX);
+    return getcwd(buf, PATH_MAX);
 }
 
+// glibc extension
 char *get_current_dir_name(void)
 {
-	int device_idx;
-	const devoptab_posix_t *const posix = get_default_posix_device(&device_idx);
-	if (posix == NULL)
-		return NULL;
-
-	if (posix->get_current_dir_name_r != NULL)
-	{
-		callback_device_idx = device_idx;
-		char *const ret = posix->get_current_dir_name_r();
-		callback_device_idx = -1;
-		return ret;
-	}
-
-	return getcwd(NULL, 0);
+    return getcwd(NULL, 0);
 }
 
 int rename(const char *oldName, const char *newName)

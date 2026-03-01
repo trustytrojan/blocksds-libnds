@@ -48,8 +48,6 @@ typedef struct
 	int (*unlink_r)(const char *name);
 	int (*chdir_r)(const char *name);
 	char *(*getcwd_r)(char *buf, size_t size);
-	char *(*getwd_r)(char *buf);
-	char *(*get_current_dir_name_r)(void);
 	int (*rename_r)(const char *oldName, const char *newName);
 	int (*mkdir_r)(const char *path, int mode);
 

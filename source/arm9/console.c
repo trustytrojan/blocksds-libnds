@@ -363,13 +363,20 @@ static ssize_t con_write(int, const char *ptr, size_t len)
     return count;
 }
 
+static int _open(const char *, int)
+{
+    return 0;
+}
+
 static const devoptab_t dot_console = {
     .name = "con",
+    .open_r = _open,
     .write_r = con_write,
 };
 
 static const devoptab_t dot_nocash = {
     .name = "nocash",
+    .open_r = _open,
     .write_r = nocash_write
 };
 

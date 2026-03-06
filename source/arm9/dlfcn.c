@@ -49,7 +49,7 @@ static int dlopen_mode_validate(int mode);
 static void dsl_dep_names_free(char **dep_names, int dep_count);
 static void dsl_close_handle(dsl_handle *h);
 static void *dlopen_internal(const char *file, int mode);
-static void *dlopen_FILE_internal(FILE *f, int mode, const char *origin_path);
+static void *dlopen_FILE_internal(FILE *f, int mode);
 
 // Some ELF-related definitions
 
@@ -284,35 +284,10 @@ static void dsl_loaded_lib_remove(dsl_loaded_lib *lib)
     }
 }
 
-static char *dsl_make_relative_path(const char *origin_path, const char *dep_name)
-{
-    if ((origin_path == NULL) || (dep_name == NULL))
-        return NULL;
-
-    if (dep_name[0] == '/')
-        return NULL;
-
-    const char *slash = strrchr(origin_path, '/');
-    if (slash == NULL)
-        return NULL;
-
-    size_t dir_len = slash - origin_path + 1;
-    size_t dep_len = strlen(dep_name);
-
-    char *full_path = malloc(dir_len + dep_len + 1);
-    if (full_path == NULL)
-        return NULL;
-
-    memcpy(full_path, origin_path, dir_len);
-    memcpy(full_path + dir_len, dep_name, dep_len + 1);
-
-    return full_path;
-}
-
 char dsl_load_deps_errbuf[50];
 
 static int dsl_load_dependencies(dsl_handle *handle, char **dep_names, int dep_count,
-                                 int mode, const char *origin_path)
+                                 int mode)
 {
     if (dep_count == 0)
         return 0;
@@ -327,18 +302,15 @@ static int dsl_load_dependencies(dsl_handle *handle, char **dep_names, int dep_c
 
     for (int i = 0; i < dep_count; i++)
     {
-        char *resolved_path = dsl_make_relative_path(origin_path, dep_names[i]);
-        const char *load_name = (resolved_path != NULL) ? resolved_path : dep_names[i];
+        char load_name[strlen(dep_names[i]) + sizeof(".dsl")];
+        sprintf(load_name, "%s.dsl", dep_names[i]);
 
         void *dep_handle = dlopen_internal(load_name, mode);
-
-        free(resolved_path);
 
         if (dep_handle == NULL)
         {
             // Override dl_err_str set by dlopen_internal, as it is a less specific error than this:
-            strcpy(dsl_load_deps_errbuf, "failed to load dependency: ");
-            strcat(dsl_load_deps_errbuf, load_name);
+            sprintf(dsl_load_deps_errbuf, "failed to load dependency: %s", dep_names[i]);
             dl_err_str = dsl_load_deps_errbuf;
             return -1;
         }
@@ -650,7 +622,7 @@ static void dsl_close_handle(dsl_handle *h)
     free(h);
 }
 
-static void *dlopen_FILE_internal(FILE *f, int mode, const char *origin_path)
+static void *dlopen_FILE_internal(FILE *f, int mode)
 {
     // Clear error string
     dl_err_str = NULL;
@@ -811,7 +783,7 @@ static void *dlopen_FILE_internal(FILE *f, int mode, const char *origin_path)
     handle->loaded_mem = loaded_mem;
     handle->sym_table = sym_table;
 
-    if (dsl_load_dependencies(handle, dep_names, dep_count, mode, origin_path) != 0)
+    if (dsl_load_dependencies(handle, dep_names, dep_count, mode) != 0)
         goto cleanup;
 
     if (dsl_resolve_external_symbols(handle) != 0)
@@ -869,7 +841,7 @@ cleanup:
 
 void *dlopen_FILE(FILE *f, int mode)
 {
-    return dlopen_FILE_internal(f, mode, NULL);
+    return dlopen_FILE_internal(f, mode);
 }
 
 static void *dlopen_internal(const char *file, int mode)
@@ -911,7 +883,7 @@ static void *dlopen_internal(const char *file, int mode)
         return NULL;
     }
 
-    void *p = dlopen_FILE_internal(f, mode, file);
+    void *p = dlopen_FILE_internal(f, mode);
 
     fclose(f);
 
